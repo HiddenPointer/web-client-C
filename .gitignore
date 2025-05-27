@@ -1,0 +1,32 @@
+# .gitignore para proyecto REST client en C
+
+# Directorios de compilación
+/build/
+/Release/
+/Debug/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Archivos objeto y ejecutables
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.a
+*.lib
+
+# Configuración de IDE
+.idea/
+.vscode/
+
+# Archivos temporales y de respaldo
+*~
+*.swp
+*.tmp
+*.log
+
+# Archivos de sistema
+.DS_Store
