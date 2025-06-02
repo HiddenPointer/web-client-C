@@ -1,16 +1,15 @@
 # Biblioteca REST en C para Autorización de Transacciones
 
-Cliente REST de alto rendimiento usando libcurl multi y cJSON.
+Cliente REST de alto rendimiento usando libcurl multi y Parson.
 
 ## Requisitos
-- Linux x86_64 / Windows con CMake y compilador C99
-- libcurl (>=7.60)
-- libcjson-dev
+- Linux x86_64 / Windows con compilador C99 y libcurl instalado
+  - Parson: copia manual de `parson.h` y `parson.c` en `src/`
 - pthreads
 
 Instalación en Debian/Ubuntu:
 ```bash
-sudo apt-get install libcurl4-openssl-dev libcjson-dev cmake build-essential
+sudo apt-get install libcurl4-openssl-dev cmake build-essential
 ```
 
 ## Estructura del proyecto
@@ -33,6 +32,27 @@ cmake --build . --config Release
 ./examples/example
 ```
 
+## Compilar sin CMake en Linux (RHEL 8.1)
+Instala dependencias:
+```bash
+sudo dnf install -y gcc gcc-c++ make libcurl-devel openssl-devel
+```
+Compilación directa:
+```bash
+gcc -std=c99 -Wall -Wextra -O3 -pthread \
+    src/rest_client.c src/parson.c examples/example.c \
+    -o example -lcurl -lcrypto
+```
+Usando librería estática:
+```bash
+# 1) Construir librería (asegúrate de tener src/parson.c y src/parson.h)
+gcc -std=c99 -Wall -Wextra -O3 -pthread -c src/rest_client.c src/parson.c -o rest_client.o
+ar rcs librest_client.a rest_client.o parson.o
+
+# 2) Compilar ejemplos y enlazar
+gcc examples/example.c -o example -L. -lrest_client -lcurl -lcrypto
+```
+
 ### Uso en Windows
 En PowerShell con Visual Studio y vcpkg:
 1. Clonar y preparar vcpkg:
@@ -40,7 +60,7 @@ En PowerShell con Visual Studio y vcpkg:
    git clone https://github.com/microsoft/vcpkg.git
    cd vcpkg
    .\bootstrap-vcpkg.bat
-   .\vcpkg.exe install curl cjson
+   .\vcpkg.exe install curl
    ```
 2. Crear y configurar build:
    ```powershell
@@ -56,7 +76,7 @@ En PowerShell con Visual Studio y vcpkg:
 ### Uso con MSYS2
 Abre la shell *MSYS2 MinGW 64-bit* e instala dependencias:
 ```bash
-pacman -S mingw-w64-x86_64-curl mingw-w64-x86_64-cjson mingw-w64-x86_64-toolchain cmake make pkg-config
+pacman -S mingw-w64-x86_64-curl mingw-w64-x86_64-toolchain cmake make pkg-config
 ```
 Configura pkg-config:
 ```bash
@@ -104,7 +124,7 @@ rest_destroy(c);
 - Reuso de sockets (keep-alive) via `CURLMOPT_MAXCONNECTS`.
 - API bloqueante pero no reentrante; protegido con mutex para thread-safety.
 - Zero-copy parcial: se expande el buffer solo cuando llegan datos.
-- Serialización JSON con cJSON.
+- Serialización JSON con Parson (biblioteca Parson, MIT license).
 
 ## Benchmark (1000 peticiones concurrentes)
 Probado en Intel i7-9700, Linux x86_64, glibc 2.31:

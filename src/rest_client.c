@@ -1,6 +1,6 @@
 /**
  * @file rest_client.c
- * @brief Implementación del cliente REST de alto rendimiento usando libcurl multi y cJSON
+ * @brief Implementación del cliente REST de alto rendimiento usando libcurl multi y Parson
  */
 
 #include "rest_client.h"
@@ -8,6 +8,8 @@
 #include <string.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <time.h>  /* Para nanosleep */
+#include "lib/parson.h"
 
 struct rest_client {
     char *base_url;
@@ -131,8 +133,8 @@ rest_response *rest_request(struct rest_client *c,
         curl_easy_cleanup(easy);
         free(url);
         curl_slist_free_all(hdrs);
-        // parsear JSON
-        tmp->json = cJSON_Parse(tmp->body);
+        // parsear JSON usando Parson
+        tmp->json = json_parse_string(tmp->body);
         r = tmp;
         // verificar reintento
         if (r->status < 500 || r->status >= 600 || attempt >= c->max_retries) {
@@ -141,7 +143,13 @@ rest_response *rest_request(struct rest_client *c,
         // preparar reintento
         rest_response_free(r);
         r = NULL;
-        usleep(delay_ms * 1000);
+        {
+            /* Retardo entre reintentos: usar nanosleep */
+            struct timespec ts;
+            ts.tv_sec  = delay_ms / 1000;
+            ts.tv_nsec = (delay_ms % 1000) * 1000000;
+            nanosleep(&ts, NULL);
+        }
         delay_ms *= 2;
         attempt++;
     }
@@ -150,8 +158,9 @@ rest_response *rest_request(struct rest_client *c,
 
 void rest_response_free(rest_response *r) {
     if (!r) return;
+    // liberar cuerpo y valor JSON
     free(r->body);
-    cJSON_Delete(r->json);
+    json_value_free(r->json);
     free(r);
 }
 

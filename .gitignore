@@ -7,7 +7,6 @@
 CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
-Makefile
 
 # Archivos objeto y ejecutables
 *.o

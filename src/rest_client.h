@@ -1,6 +1,6 @@
 /**
  * @file rest_client.h
- * @brief Cliente REST de alto rendimiento usando libcurl multi y cJSON
+ * @brief Cliente REST de alto rendimiento usando libcurl multi y Parson
  * @details API segura para hilos, no bloqueante, con conexiones persistentes y timeouts configurables.
  */
 #ifndef REST_CLIENT_H
@@ -8,7 +8,7 @@
 
 #include <stddef.h>
 #include <curl/curl.h>
-#include <cJSON.h>
+#include "lib/parson.h"  /* Biblioteca JSON Parson */
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,7 +28,7 @@ typedef struct rest_response {
     long status;      /**< Código de estado HTTP */
     char *body;       /**< Cuerpo de la respuesta (malloc'd) */
     size_t size;      /**< Número de bytes en el cuerpo */
-    cJSON *json;      /**< JSON parseado o NULL en caso de error de parseo */
+    JSON_Value *json; /**< Valor JSON parseado o NULL en caso de error */
 } rest_response;
 
 /**
